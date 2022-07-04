@@ -184,5 +184,5 @@ if __name__ == '__main__':
     trainer.fit(system, ckpt_path=hparams.ckpt_path)
 
     # save slimmed ckpt for the last epoch
-    ckpt_ = slim_ckpt(f'ckpts/{hparams.exp_name}/epoch={hparams.num_epochs-1}.ckpt')
-    torch.save(ckpt_, f'ckpts/{hparams.exp_name}/epoch={hparams.num_epochs-1}_slim.ckpt')
+    ckpt_ = slim_ckpt('ckpts/' + hparams.exp_name + '/epoch=' + hparams.num_epochs-1 + '.ckpt')
+    torch.save(ckpt_, 'ckpts/' + hparams.exp_name + '/epoch-' + hparams.num_epochs-1 + '_slim.ckpt')
