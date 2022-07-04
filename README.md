@@ -1,4 +1,4 @@
-# ngp_pl
+# ngp_pl - iain
 
 ### Advertisement: stay tuned with [my channel](https://www.youtube.com/channel/UC7UlsMUu_gIgpqNGB4SqSwQ), I will upload cuda tutorials recently, and do a stream about this implementation!
 
