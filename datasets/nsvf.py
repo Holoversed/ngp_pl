@@ -90,7 +90,7 @@ class NSVFDataset(BaseDataset):
             imgs = sorted(glob.glob(os.path.join(self.root_dir, 'rgb', prefix+'*.png')))
             poses = sorted(glob.glob(os.path.join(self.root_dir, 'pose', prefix+'*.txt')))
 
-            print(f'Loading {len(imgs)} {split} images ...')
+            print('Loading ' + len(imgs) + split +' images ...')
             for idx, (img, pose) in enumerate(tqdm(zip(imgs, poses))):
                 c2w = np.loadtxt(pose)[:3]
                 c2w[:, 1:3] *= -1 # [right down front] to [right up back]
