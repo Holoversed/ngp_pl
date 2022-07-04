@@ -159,7 +159,7 @@ if __name__ == '__main__':
     hparams = get_opts()
     system = NeRFSystem(hparams)
 
-    ckpt_cb = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}',
+    ckpt_cb = ModelCheckpoint(dirpath='ckpts/' + hparams.exp_name,
                               filename='{epoch:d}',
                               every_n_epochs=hparams.ckpt_freq,
                               save_on_train_epoch_end=True,
