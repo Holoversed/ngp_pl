@@ -123,7 +123,7 @@ class NeRFSystem(LightningModule):
 
     def on_validation_start(self):
         if not hparams.no_save_test:
-            self.val_dir = f'results/{hparams.dataset_name}/{hparams.exp_name}'
+            self.val_dir = "results/" + hparams.dataset_name + "/" + hparams.exp_name
             os.makedirs(self.val_dir, exist_ok=True)
 
     def validation_step(self, batch, batch_nb):

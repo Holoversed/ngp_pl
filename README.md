@@ -38,7 +38,7 @@ Download preprocessed datasets from [NSVF](https://github.com/facebookresearch/N
 
 # :key: Training
 
-Quickstart: `python train.py --root_dir <path/to/lego> --exp_name Lego`
+Quickstart: `python train.py --root_dir  ../../data/Synthetic_NeRF/Lego --exp_name Lego`
 
 It will train the lego scene for 20k steps (each step with 8192 rays), and perform one testing at the end. The training process should finish within about 5 minutes (saving testing image is slow, add `--no_save_test` to disable). Testing PSNR will be shown at the end.
 
