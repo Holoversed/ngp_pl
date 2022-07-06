@@ -90,12 +90,12 @@ class NSVFDataset(BaseDataset):
             imgs = sorted(glob.glob(os.path.join(self.root_dir, 'rgb', prefix+'*.png')))
             poses = sorted(glob.glob(os.path.join(self.root_dir, 'pose', prefix+'*.txt')))
 
-            print('Loading ' + len(imgs) + split +' images ...')
+            print(f'Loading {len(imgs)} {split} images ...')
             for idx, (img, pose) in enumerate(tqdm(zip(imgs, poses))):
                 c2w = np.loadtxt(pose)[:3]
                 c2w[:, 1:3] *= -1 # [right down front] to [right up back]
                 c2w[:, 3] -= self.shift
-                c2w[:, 3] /= self.scale # to bound the scene inside [-1, 1]
+                c2w[:, 3] /= 2*self.scale # to bound the scene inside [-0.5, 0.5]
 
                 rays_o, rays_d = \
                     get_rays(self.directions, torch.cuda.FloatTensor(c2w))
