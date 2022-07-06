@@ -89,7 +89,7 @@ class NeRFSystem(LightningModule):
         self.train_dataset.batch_size = hparams.batch_size
         return DataLoader(self.train_dataset,
                           shuffle=True,
-                          num_workers=16,
+                          num_workers=1,
                           persistent_workers=True,
                           batch_size=hparams.batch_size,
                           pin_memory=True)
@@ -97,7 +97,7 @@ class NeRFSystem(LightningModule):
     def val_dataloader(self):
         return DataLoader(self.test_dataset,
                           shuffle=False,
-                          num_workers=16,
+                          num_workers=1,
                           batch_size=None,
                           pin_memory=True)
 
@@ -184,5 +184,5 @@ if __name__ == '__main__':
     trainer.fit(system, ckpt_path=hparams.ckpt_path)
 
     # save slimmed ckpt for the last epoch
-    ckpt_ = slim_ckpt('ckpts/' + hparams.exp_name + '/epoch=' + hparams.num_epochs-1 + '.ckpt')
-    torch.save(ckpt_, 'ckpts/' + hparams.exp_name + '/epoch-' + hparams.num_epochs-1 + '_slim.ckpt')
+    ckpt_ = slim_ckpt(f'ckpts/{hparams.exp_name}/epoch={hparams.num_epochs-1}.ckpt')
+    torch.save(ckpt_, f'ckpts/{hparams.exp_name}/epoch={hparams.num_epochs-1}_slim.ckpt')
