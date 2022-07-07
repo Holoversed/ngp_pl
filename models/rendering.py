@@ -12,9 +12,11 @@ def render(model, rays, **kwargs):
     Render rays by
     1. Compute the intersection of the rays with the scene bounding box
     2. Follow the process in @render_func (different for train/test)
+
     Inputs:
         model: NGP
         rays: (N_rays, 3+3), ray origins and directions
+
     Outputs:
         result: dictionary containing final rgb and depth
     """
@@ -38,6 +40,7 @@ def render(model, rays, **kwargs):
 def __render_rays_test(model, rays_o, rays_d, hits_t, **kwargs):
     """
     Render rays by
+
     while (a ray hasn't converged)
         1. Move each ray to its next occupied @N_samples (initially 1) samples 
            and evaluate the properties (sigmas, rgbs) there
@@ -125,4 +128,4 @@ def __render_rays_train(model, rays_o, rays_d, hits_t, **kwargs):
 
     results['rgb'] = rgb + rgb_bg*rearrange(1-results['opacity'], 'n -> n 1')
 
-    return 
+    return results
