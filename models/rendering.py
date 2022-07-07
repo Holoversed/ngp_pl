@@ -12,11 +12,9 @@ def render(model, rays, **kwargs):
     Render rays by
     1. Compute the intersection of the rays with the scene bounding box
     2. Follow the process in @render_func (different for train/test)
-
     Inputs:
         model: NGP
         rays: (N_rays, 3+3), ray origins and directions
-
     Outputs:
         result: dictionary containing final rgb and depth
     """
@@ -40,7 +38,6 @@ def render(model, rays, **kwargs):
 def __render_rays_test(model, rays_o, rays_d, hits_t, **kwargs):
     """
     Render rays by
-
     while (a ray hasn't converged)
         1. Move each ray to its next occupied @N_samples (initially 1) samples 
            and evaluate the properties (sigmas, rgbs) there
@@ -117,13 +114,15 @@ def __render_rays_train(model, rays_o, rays_d, hits_t, **kwargs):
     rays_a, xyzs, dirs, deltas, ts = \
         RayMarcher.apply(
             rays_o, rays_d, hits_t[:, 0], model.density_bitfield, model.scale,
-            kwargs.get('exp_step_factor', 0.), True, model.grid_size, MAX_SAMPLES)
+            kwargs.get('exp_step_factor', 0.), model.grid_size, MAX_SAMPLES)
 
     sigmas, rgbs = model(xyzs, dirs)
 
     rgb_bg = torch.ones(3, device=rays_o.device) # TODO: infer env map from network
-    results['opacity'], results['depth'], results['rgb'] = \
+    results['opacity'], results['depth'], rgb = \
         VolumeRenderer.apply(sigmas, rgbs, deltas, ts,
-                             rays_a, rgb_bg, kwargs.get('T_threshold', 1e-4))
+                             rays_a, kwargs.get('T_threshold', 1e-4))
 
-    return results
+    results['rgb'] = rgb + rgb_bg*rearrange(1-results['opacity'], 'n -> n 1')
+
+    return 
