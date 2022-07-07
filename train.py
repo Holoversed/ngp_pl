@@ -68,7 +68,7 @@ class NeRFSystem(LightningModule):
         self.test_dataset = dataset(split='test', **kwargs)
 
     def configure_optimizers(self):
-        self.opt = FusedAdam(self.model.parameters(), hparams.lr)
+        self.opt = FusedAdam(self.model.parameters(), hparams.lr, eps=1e-15)
         self.sch = CosineAnnealingLR(self.opt,
                                      hparams.num_epochs,
                                      hparams.lr/30)
@@ -88,16 +88,16 @@ class NeRFSystem(LightningModule):
 
         self.train_dataset.batch_size = hparams.batch_size
         return DataLoader(self.train_dataset,
-                          shuffle=True,
-                          num_workers=1,
+                          shuffle=False, # shuffle is done in datasets/base.py
+                          num_workers=16,
                           persistent_workers=True,
-                          batch_size=hparams.batch_size,
+                          batch_size=None,
                           pin_memory=True)
 
     def val_dataloader(self):
         return DataLoader(self.test_dataset,
                           shuffle=False,
-                          num_workers=1,
+                          num_workers=8,
                           batch_size=None,
                           pin_memory=True)
 
@@ -112,7 +112,7 @@ class NeRFSystem(LightningModule):
         results = self(rays, split='train')
         loss_d = self.loss(results, rgb)
         if hparams.hard_sampling:
-            self.weights[batch['idx']] = loss_d['rgb'].detach()
+            self.weights[batch['idxs']] = loss_d['rgb'].detach()
         loss = sum(lo.mean() for lo in loss_d.values())
 
         self.log('lr', self.opt.param_groups[0]['lr'])
@@ -123,7 +123,7 @@ class NeRFSystem(LightningModule):
 
     def on_validation_start(self):
         if not hparams.no_save_test:
-            self.val_dir = "results/" + hparams.dataset_name + "/" + hparams.exp_name
+            self.val_dir = f'results/{hparams.dataset_name}/{hparams.exp_name}'
             os.makedirs(self.val_dir, exist_ok=True)
 
     def validation_step(self, batch, batch_nb):
@@ -137,8 +137,8 @@ class NeRFSystem(LightningModule):
             log['rgb'] = rgb_pred = (rgb_pred*255).astype(np.uint8)
             log['depth'] = depth = \
                 depth2img(results['depth'].reshape(h, w).cpu().numpy())
-            imageio.imsave(os.path.join(self.val_dir, batch_nb + '.png'), rgb_pred)
-            imageio.imsave(os.path.join(self.val_dir, batch_nb + '.png'), depth)
+            imageio.imsave(os.path.join(self.val_dir, f'{batch_nb:03d}.png'), rgb_pred)
+            imageio.imsave(os.path.join(self.val_dir, f'{batch_nb:03d}_d.png'), depth)
 
         return log
 
@@ -159,9 +159,9 @@ if __name__ == '__main__':
     hparams = get_opts()
     system = NeRFSystem(hparams)
 
-    ckpt_cb = ModelCheckpoint(dirpath='ckpts/' + hparams.exp_name,
+    ckpt_cb = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}',
                               filename='{epoch:d}',
-                              every_n_epochs=hparams.ckpt_freq,
+                              every_n_epochs=hparams.num_epochs,
                               save_on_train_epoch_end=True,
                               save_top_k=-1)
     callbacks = [ckpt_cb, TQDMProgressBar(refresh_rate=1)]
@@ -176,7 +176,7 @@ if __name__ == '__main__':
                       callbacks=callbacks,
                       logger=logger,
                       enable_model_summary=False,
-                      accelerator='auto',
+                      accelerator='gpu',
                       devices=1, # tinycudann doesn't support multigpu...
                       num_sanity_val_steps=0,
                       precision=16)
